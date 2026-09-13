@@ -6,13 +6,13 @@ A complete secure network design for a fictional logistics company (Smith Logist
 
 ## Overview
 
-The brief: connect eight departments — from a 300-machine warehouse to a 30-machine server room — with no single point of failure, full departmental segmentation, and security enforced at every layer.
+The brief: Connected eight departments from a 300-machine warehouse to a 30-machine server room with no single point of failure, full departmental segmentation, and security enforced at every layer.
 
 **Key design choices:**
 - **Three-tier hierarchical architecture** (core, distribution, access) for scalability and clear separation of responsibilities
-- **Full redundancy** — dual ISPs, three mesh-connected core routers, and dual uplinks from every access switch
-- **VLSM subnetting** so each department gets address space sized to actual need
-- **Defence-in-depth** — security controls at the physical, data link, network, and management layers
+- **Full redundancy**: dual ISPs, three mesh-connected core routers, and dual uplinks from every access switch
+- **VLSM subnetting**: each department gets address space sized to actual need
+- **Security layers**: security controls at the physical, data link, network, and management layers
 
 ## Network Architecture
 
@@ -42,7 +42,7 @@ Router-to-switch and router-to-firewall links use /30 point-to-point subnets fro
 
 ## Routing
 
-- **OSPF (Area 0)** across the core and distribution layers — automatic route discovery and sub-second failover if a core router goes down
+- **OSPF (Area 0)** across the core and distribution layers used automatic route discovery and sub-second failover if a core router goes down
 - Static default routes from core routers to the firewalls
 - Inter-VLAN routing performed in hardware on the Layer 3 distribution switches
 
@@ -59,15 +59,15 @@ Router-to-switch and router-to-firewall links use /30 point-to-point subnets fro
 ### Guest Wi-Fi Isolation
 
 The guest network lives in its own VLAN (VLAN 80) with two ACLs on its gateway interface:
-- `BLOCK-GUEST` (inbound) — permits guest traffic to ISP addresses only, denies all internal subnets
-- `BLOCK-TO-GUEST` (outbound) — denies all internal traffic destined for the guest subnet
+- `BLOCK-GUEST` (inbound) permits guest traffic to ISP addresses only, denies all internal subnets
+- `BLOCK-TO-GUEST` (outbound) denies all internal traffic destined for the guest subnet
 
 A key lesson from this build: **ACL placement matters as much as the rule itself.** The ACLs must sit on the switch that owns the VLAN's gateway — a control outside the traffic path is no control at all.
 
 ## Services
 
-- **DHCP & DNS** — Server 1 (VLAN 70) handles addressing for all departments and internal name resolution
-- **Web server** — Server 2 hosts the intranet (HTTP), reachable by internal PCs and blocked for guests via ACL
+- **DHCP & DNS** Server 1 (VLAN 70) handles addressing for all departments and internal name resolution
+- **Web server** Server 2 hosts the intranet (HTTP), reachable by internal PCs and blocked for guests via ACL
 
 ## Verification
 
@@ -83,7 +83,7 @@ Screenshots in [`/images`](images) show the network converged and operational:
 
 ## Known Limitations
 
-**ISP / internet simulation:** The two ISP routers in this project are placeholders representing external connectivity — Packet Tracer cannot simulate a real internet. This means outbound "internet" traffic (e.g. guest Wi-Fi browsing) cannot be fully tested end-to-end inside the file, and pings destined beyond the ISP routers will not receive replies. The design intent still holds and is verifiable at the boundary: the guest ACL permits traffic toward the ISP addresses and denies everything internal, which can be confirmed with `show access-lists` match counters on D2. In a real deployment, the ISP links would terminate at provider equipment with NAT configured at the firewalls.
+**ISP / internet simulation:** The two ISP routers in this project are placeholders representing external connectivity. Packet Tracer cannot simulate a real internet. This means outbound "internet" traffic (e.g. guest Wi-Fi browsing) cannot be fully tested end-to-end inside the file, and pings destined beyond the ISP routers will not receive replies. The design intent still holds and is verifiable at the boundary: the guest ACL permits traffic toward the ISP addresses and denies everything internal, which can be confirmed with `show access-lists` match counters on D2. In a real deployment, the ISP links would terminate at provider equipment with NAT configured at the firewalls.
 
 ## How to Open
 
@@ -91,12 +91,20 @@ Screenshots in [`/images`](images) show the network converged and operational:
 2. Clone this repo and open `network.pkt`
 3. Device configs are in [`/configs`](configs)
 
-## What I Learned
+See [CONFIGURATION.md](CONFIGURATION.md) for an annotated walkthrough of every device's configuration.
 
-- Redundancy is a question you ask at every layer: *what happens when this fails?*
-- Security is a per-layer decision, not a bolt-on — defence-in-depth in practice
-- Where you place a control matters as much as the control itself
-- Working the subnetting out by hand before touching a single device saves hours of debugging later
+### Device credentials
+
+All devices in this lab use the same credentials (lab use only — never do this in production):
+
+| | |
+|---|---|
+| Enable / privileged mode | `cisco123` |
+| SSH / console login | `admin` / `cisco123` |
+
+### Build it yourself
+
+Want to build the network from scratch rather than explore mine? [CONFIGURATION.md](CONFIGURATION.md) walks through every device's configuration with explanations — baseline hardening, OSPF, VLANs, trunking, port security, and the guest-isolation ACLs.
 
 ---
 
